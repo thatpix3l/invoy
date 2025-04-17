@@ -304,19 +304,6 @@ fn build_invoice(command_build: &CommandBuild) -> Result<(), BuildInvoiceError> 
 }
 
 fn main() {
-    
-    // let maybe_invoice_captures = INVOICE_NAME_RE.captures("Invoice # 2504070176221 - Tradeport - Star Transport.pdf");
-    // 
-    // let matched_word = maybe_invoice_captures
-    // .expect("could not capture groups from supposed invoice filename; is it formatted correctly?")
-    // .name("year")
-    // .expect("year not found")
-    // .as_str();
-    // 
-    // println!("{}", matched_word);
-    // 
-    // return;
-
     let cli = CommandRoot::parse();
     match &cli.command {
         RootSubcommands::Build(command_build) => 
