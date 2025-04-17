@@ -54,9 +54,6 @@ invoice\
 
 #[derive(Error, Debug)]
 enum BuildInvoiceError {
-    #[error("input directory path should not end with \"..\"")]
-    InputPathDisallowedSuffix,
-
     #[error("input directory name is not valid UTF-8")]
     InputNameNotUtf8,
 
@@ -68,10 +65,29 @@ enum BuildInvoiceError {
 
     #[error("unable to build invoice")]
     Generic,
+    
+    #[error("unable to extract PDF object")]
+    ObjectExtraction,
+    
+    #[error("unable to extract page root key")]
+    PageRootKeyExtraction,
+    
+    #[error("unable to extract catalog")]
+    CatalogExtraction,
+    
+    #[error("unable to extract pages object")]
+    PagesObjectExtraction,
+    
+    #[error("unable to save built invoice")]
+    SaveBuiltInvoice(#[from] std::io::Error),
+
+    #[error("input path is not valid UTF-8")]
+    InputPathNotUtf8,
+
 }
 
 // Combines multiple PDFs into one
-pub fn merge_and_save(documents: Vec<Document>, path: PathBuf) -> std::io::Result<()> {
+pub fn merge_and_save(documents: Vec<Document>, path: PathBuf) -> Result<(), BuildInvoiceError> {
 
     // Define a starting max_id (will be used as start index for object_ids)
     let mut max_id = 1;
@@ -103,9 +119,16 @@ pub fn merge_and_save(documents: Vec<Document>, path: PathBuf) -> std::io::Resul
                         first = true;
                         pagenum += 1;
                     }
-
-                    (object_id, doc.get_object(object_id).unwrap().to_owned())
+                    
+                    let maybe_obj = doc.get_object(object_id);
+                    
+                    match maybe_obj {
+                        Ok(obj) => Ok((object_id, obj.to_owned())),
+                        Err(_) => Err(BuildInvoiceError::ObjectExtraction)
+                    }
+                    
                 })
+                .flatten()
                 .collect::<BTreeMap<ObjectId, Object>>(),
         );
         documents_objects.extend(doc.objects);
@@ -173,7 +196,12 @@ pub fn merge_and_save(documents: Vec<Document>, path: PathBuf) -> std::io::Resul
     for (object_id, object) in documents_pages.iter() {
         if let Ok(dictionary) = object.as_dict() {
             let mut dictionary = dictionary.clone();
-            dictionary.set("Parent", pages_object.as_ref().unwrap().0);
+            let pages_root_key = pages_object
+                .as_ref()
+                .map(|p| p.0)
+                .ok_or(BuildInvoiceError::PageRootKeyExtraction)?;
+
+            dictionary.set("Parent", pages_root_key);
 
             document
                 .objects
@@ -188,8 +216,8 @@ pub fn merge_and_save(documents: Vec<Document>, path: PathBuf) -> std::io::Resul
         return Ok(());
     }
 
-    let catalog_object = catalog_object.unwrap();
-    let pages_object = pages_object.unwrap();
+    let catalog_object = catalog_object.ok_or(BuildInvoiceError::CatalogExtraction)?;
+    let pages_object = pages_object.ok_or(BuildInvoiceError::PagesObjectExtraction)?;
 
     // Build a new "Pages" with updated fields
     if let Ok(dictionary) = pages_object.1.as_dict() {
@@ -244,14 +272,7 @@ pub fn merge_and_save(documents: Vec<Document>, path: PathBuf) -> std::io::Resul
 
     document.compress();
 
-    // Save the merged PDF
-    // Store file in current working directory.
-    // Note: Line is excluded when running tests
-    if false {
-        document.save(path.clone()).unwrap();
-    }
-
-    document.save(path).unwrap();
+    document.save(path)?;
 
     Ok(())
 }
@@ -263,9 +284,9 @@ fn build_invoice(command_build: &CommandBuild) -> Result<(), BuildInvoiceError> 
     // Extract name of input directory path.
     let input_dir_name = input_dir_path
         .file_name()
-        .ok_or(BuildInvoiceError::InputPathDisallowedSuffix)?
-        .to_str()
-        .unwrap();
+        .map(|s| s.to_str())
+        .flatten()
+        .ok_or(BuildInvoiceError::InputPathNotUtf8)?;
     
     // Extract ID of invoice, based on input directory name.
     let invoice_id = INVOICE_DIR_NAME_RE
@@ -299,8 +320,7 @@ fn build_invoice(command_build: &CommandBuild) -> Result<(), BuildInvoiceError> 
     .flatten()
     .collect::<Vec<_>>();
     
-    merge_and_save(documents, output_dir_path).or(Err(BuildInvoiceError::Generic))
-
+    merge_and_save(documents, output_dir_path)
 }
 
 fn main() {
