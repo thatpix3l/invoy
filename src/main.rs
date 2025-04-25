@@ -87,7 +87,7 @@ enum BuildInvoiceError {
 }
 
 // Combines multiple PDFs into one
-pub fn merge_and_save(documents: Vec<Document>, path: PathBuf) -> Result<(), BuildInvoiceError> {
+fn merge_and_save(documents: Vec<Document>, path: PathBuf) -> Result<(), BuildInvoiceError> {
 
     // Define a starting max_id (will be used as start index for object_ids)
     let mut max_id = 1;
