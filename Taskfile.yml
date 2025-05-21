@@ -1,0 +1,20 @@
+# https://taskfile.dev
+
+version: '3'
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  build-linux:
+    cmds:
+      - earthly +build-linux
+  
+  build-and-run-linux:
+    deps: [build-linux]
+    cmds:
+      - ./build/linux/x64/release/bundle/invoy
+
+  default:
+    deps: [build-and-run-linux]
+    silent: false
