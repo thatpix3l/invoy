@@ -1,13 +1,17 @@
 [package]
-name = "invoy"
+name = "paper_mache"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 clap = { version = "4.5.36", features = ["derive"] }
-lopdf = "0.36.0"
-pdf = "0.9.0"
+directories = "6.0.0"
+freedesktop-icons = "0.4.0"
+iced = { version = "0.13.1", features = ["default", "image", "svg"] }
 regex = "1.11.1"
 regex-macro = "0.3.0"
+rfd = "0.15.3"
 thiserror = "2.0.12"
-windows-sys = "0.59.0"
+
+[build-dependencies]
+glib-build-tools = "0.20.0"
