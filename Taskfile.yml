@@ -3,6 +3,15 @@
 version: '3'
 
 tasks:
+  
+  install-dev-tools:
+    cmds:
+      - cargo install flutter_rust_bridge_codegen
+  
+  gen:
+    cmds:
+      - cd invoy && flutter_rust_bridge_codegen generate --watch
+
   build-linux:
     cmds:
       - earthly +build-linux
@@ -10,7 +19,7 @@ tasks:
   build-and-run-linux:
     deps: [build-linux]
     cmds:
-      - ./build/linux/x64/release/bundle/invoy
+      - ./build/linux/x64/release/bundle/invoy {{.CLI_ARGS}}
 
   default:
     deps: [build-and-run-linux]
