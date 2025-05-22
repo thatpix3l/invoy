@@ -12,10 +12,16 @@ pub fn pick_invoice_dir() -> Option<String> {
         .flatten()
 }
 
-pub fn build_invoice(input_dir: String) -> Result<(), err::BuildInvoiceError> {
+pub fn build_invoice(input_dir: Option<String>) -> Option<String> {
+    
+    let input_dir = match input_dir {
+        Some(v) => v,
+        None => return Some(err::BuildInvoiceError::GsRetrieveStdout.to_string())
+    };
+
     crate::pdf_components_util::build_invoice(pdf_components_util::BuildInvoiceArguments{
         input_dir: input_dir.into()
-    })
+    }).err().map(|v| v.to_string())
 }
 
 #[flutter_rust_bridge::frb(init)]

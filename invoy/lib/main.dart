@@ -4,16 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoy/src/rust/api/simple.dart';
 import 'package:invoy/src/rust/frb_generated.dart';
 import 'package:window_manager/window_manager.dart';
-import 'dart:io' show Platform;
 
 class ColorPalette {
   static const bright = Color.fromARGB(255, 255, 247, 241);
+  static const mediumBright = Color.fromARGB(255, 165, 158, 154);
+  static const mediumDark = Color.fromARGB(255, 46, 44, 43);
   static const dark = Color.fromARGB(255, 0, 0, 0);
-  static const accent = Color.fromARGB(255, 255, 110, 42);
-}
 
-bool isDesktop() {
-  return Platform.isLinux || Platform.isWindows || Platform.isMacOS;
+  static const accent = Color.fromARGB(255, 255, 110, 42);
+  static const accentBright = Color.fromARGB(255, 255, 176, 140);
+  static const accentDark = Color.fromARGB(255, 114, 36, 0);
 }
 
 final isMaximizedProvider = FutureProvider.autoDispose((ref) async {
@@ -64,6 +64,64 @@ class ToggleWindowData {
   }
 }
 
+class SidebarActionTooltip extends StatelessWidget {
+  const SidebarActionTooltip({this.child, required this.message, super.key});
+
+  final String message;
+  final Widget? child;
+
+  @override
+  Widget build(BuildContext context) => Tooltip(
+    message: message,
+    showDuration: Duration(seconds: 10),
+    waitDuration: Duration(milliseconds: 500),
+    decoration: BoxDecoration(
+      color: ColorPalette.dark,
+      borderRadius: const BorderRadius.all(Radius.circular(4)),
+    ),
+    textStyle: TextStyle(color: ColorPalette.bright),
+    verticalOffset: -13,
+    margin: EdgeInsets.only(left: 70),
+    child: child,
+  );
+}
+
+Widget pickInvoiceDirWidgetBuilder(
+  BuildContext context,
+  WidgetRef ref,
+  Widget? child,
+) => FloatingActionButton(
+  onPressed: () => ref.refresh(pickedInvoiceDirProvider),
+  hoverColor: ColorPalette.dark.withAlpha(100),
+  splashColor: ColorPalette.accent.withAlpha(150),
+  backgroundColor: ColorPalette.mediumDark.withAlpha(200),
+  foregroundColor: ColorPalette.bright,
+  child: const Icon(Icons.folder),
+);
+
+const (String, Widget) pickInvoiceDirRecord = (
+  "Pick Invoice Directory",
+  Consumer(builder: pickInvoiceDirWidgetBuilder),
+);
+
+String? buildInvoicePreviousRunError;
+
+void maybeBuildInvoice() async {
+  buildInvoicePreviousRunError = await buildInvoice(inputDir: pickedInvoiceDir);
+}
+
+(String, Widget) buildInvoiceRecord = (
+  "Build Invoice",
+  FloatingActionButton(
+    onPressed: maybeBuildInvoice,
+    hoverColor: ColorPalette.dark.withAlpha(100),
+    splashColor: ColorPalette.accent.withAlpha(150),
+    backgroundColor: ColorPalette.mediumDark.withAlpha(200),
+    foregroundColor: ColorPalette.bright,
+    child: const Icon(MdiIcons.hammer),
+  ),
+);
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -102,35 +160,27 @@ class MyApp extends StatelessWidget {
         body: Row(
           children: [
             Container(
-              // color: Color.fromARGB(255, 255, 196, 196),
+              // color: ColorPalette.bright,
               child: Padding(
                 padding: EdgeInsetsGeometry.all(16),
-                child: Column(
-                  spacing: 16,
-                  children: [
-                    Consumer(
-                      builder: (context, ref, child) => FloatingActionButton(
-                        onPressed: () => ref.refresh(pickedInvoiceDirProvider),
-                        backgroundColor: ColorPalette.bright,
-                        foregroundColor: ColorPalette.dark,
-                        child: Icon(Icons.folder),
-                      ),
+                child:
+                    // Sidebar actions for manipulating an invoice.
+                    Column(
+                      spacing: 16,
+                      children: [pickInvoiceDirRecord, buildInvoiceRecord]
+                          .map(
+                            (record) => SidebarActionTooltip(
+                              message: record.$1,
+                              child: record.$2,
+                            ),
+                          )
+                          .toList(),
                     ),
-                    FloatingActionButton(
-                      onPressed: () {
-                        final maybeInputDir = pickedInvoiceDir;
-                        if (maybeInputDir != null) {
-                          buildInvoice(inputDir: maybeInputDir);
-                        }
-                      },
-                    ),
-                  ],
-                ),
               ),
             ),
             Center(
               child: Container(
-                color: Color.fromARGB(255, 222, 233, 255),
+                // color: Color.fromARGB(255, 222, 233, 255),
                 child: Padding(
                   padding: EdgeInsets.symmetric(
                     horizontal: 16.0,
