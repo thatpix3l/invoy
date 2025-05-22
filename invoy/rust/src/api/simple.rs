@@ -1,6 +1,21 @@
+use crate::{err, pdf_components_util};
+
 #[flutter_rust_bridge::frb(sync)] // Synchronous mode for simplicity of the demo
 pub fn greet(name: String) -> String {
     format!("Hello, {name}!")
+}
+
+pub fn pick_invoice_dir() -> Option<String> {
+    rfd::FileDialog::new()
+        .pick_folder()
+        .map(|p| p.to_str().map(|s| s.to_owned()))
+        .flatten()
+}
+
+pub fn build_invoice(input_dir: String) -> Result<(), err::BuildInvoiceError> {
+    crate::pdf_components_util::build_invoice(pdf_components_util::BuildInvoiceArguments{
+        input_dir: input_dir.into()
+    })
 }
 
 #[flutter_rust_bridge::frb(init)]

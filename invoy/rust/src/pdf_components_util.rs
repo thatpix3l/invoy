@@ -39,11 +39,11 @@ invoice\
 
 const INVOICE_DOCUMENT_ORDER: &[&'static str] = &["summary.pdf", "confirmation.pdf", "bol.pdf"];
 
-struct BuildInvoiceArguments {
-    input_dir: PathBuf,
+pub struct BuildInvoiceArguments {
+    pub input_dir: PathBuf,
 }
 
-fn build_invoice(args: impl Into<BuildInvoiceArguments>) -> Result<(), BuildInvoiceError> {
+pub fn build_invoice(args: impl Into<BuildInvoiceArguments>) -> Result<(), BuildInvoiceError> {
     let args = args.into();
 
     let input_dir_name = args

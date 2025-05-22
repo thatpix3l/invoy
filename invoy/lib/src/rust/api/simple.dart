@@ -3,8 +3,15 @@
 
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
+import '../err.dart';
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 String greet({required String name}) =>
     RustLib.instance.api.crateApiSimpleGreet(name: name);
+
+Future<String?> pickInvoiceDir() =>
+    RustLib.instance.api.crateApiSimplePickInvoiceDir();
+
+Future<void> buildInvoice({required String inputDir}) =>
+    RustLib.instance.api.crateApiSimpleBuildInvoice(inputDir: inputDir);
