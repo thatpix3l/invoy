@@ -46,16 +46,16 @@ class MaximizationListener extends WindowListener {
 class PickInvoiceDirCubit extends Cubit<Null> {
   PickInvoiceDirCubit() : super(null);
 
-  var picking = false;
+  var _picking = false;
 
   Future<void> set(InvoiceDirCubit invoiceDirCubit) async {
-    if (picking) {
+    if (_picking) {
       return;
     }
 
-    picking = true;
+    _picking = true;
     var pickedInvoiceDir = await pickInvoiceDir();
-    picking = false;
+    _picking = false;
 
     if (pickedInvoiceDir != null) {
       invoiceDirCubit.set(pickedInvoiceDir);
@@ -67,16 +67,16 @@ class PickInvoiceDirCubit extends Cubit<Null> {
 class BuildInvoiceCubit extends Cubit<String?> {
   BuildInvoiceCubit() : super(null);
 
-  var building = false;
+  var _building = false;
 
   Future<void> set(String invoiceDir) async {
-    if (building) {
+    if (_building) {
       return;
     }
 
-    building = true;
+    _building = true;
     var err = await buildInvoice(inputDir: invoiceDir);
-    building = false;
-    emit(await buildInvoice(inputDir: invoiceDir));
+    _building = false;
+    emit(err);
   }
 }
