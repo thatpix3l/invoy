@@ -24,22 +24,23 @@ void Function() pickInvoiceAction(BuildContext context) =>
     );
 
 class WindowMaximizedCubit extends Cubit<bool> {
-  WindowMaximizedCubit() : super(false);
+  WindowMaximizedCubit() : super(false) {
+    windowManager.addListener(MaximizationListener(maximizedState: this));
+  }
 
   void set(bool isMaximized) async => emit(isMaximized);
 }
 
-void nothing() {}
+class MaximizationListener extends WindowListener {
+  MaximizationListener({required this.maximizedState});
 
-class WindowListenerCustom extends WindowListener {
-  WindowListenerCustom({required this.context});
-
-  final BuildContext context;
-  late WindowMaximizedCubit maximized = context.read();
+  final WindowMaximizedCubit maximizedState;
 
   @override
-  void onWindowMaximize() async =>
-      maximized.set(await windowManager.isMaximized());
+  void onWindowMaximize() => maximizedState.set(true);
+
+  @override
+  void onWindowUnmaximize() => maximizedState.set(false);
 }
 
 // final isMaximizedProvider = FutureProvider.autoDispose((ref) async {
