@@ -75,7 +75,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
-  Future<String?> crateApiSimpleBuildInvoice({String? inputDir});
+  Future<String?> crateApiSimpleBuildInvoice({required String inputDir});
 
   String crateApiSimpleGreet({required String name});
 
@@ -93,12 +93,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
-  Future<String?> crateApiSimpleBuildInvoice({String? inputDir}) {
+  Future<String?> crateApiSimpleBuildInvoice({required String inputDir}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_opt_String(inputDir, serializer);
+          sse_encode_String(inputDir, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,

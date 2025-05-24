@@ -1,8 +1,9 @@
-use directories::BaseDirs;
 
+use rayon::iter::ParallelIterator;
 // Regex-related imports.
 use regex::Regex;
 use regex_macro::regex;
+use walkdir::{DirEntry, WalkDir};
 use std::sync::LazyLock;
 
 // Path handling-related imports.
@@ -25,7 +26,7 @@ Invoice\ \#
 "
 );
 
-static INVOICE_DIR_NAME_RE: Re = regex!(
+pub static INVOICE_DIR_NAME_RE: Re = regex!(
     r"(?x)
 invoice\ 
 (?<invoice_id> # invoice id
@@ -43,7 +44,38 @@ pub struct BuildInvoiceArguments {
     pub input_dir: PathBuf,
 }
 
-pub fn build_invoice(args: impl Into<BuildInvoiceArguments>) -> Result<(), BuildInvoiceError> {
+fn entry_path(entry: &DirEntry) -> Result<PathBuf, String> {
+    let file_name = match entry.file_name().to_owned().into_string() {
+        Ok(v) => v,
+        Err(_) => return Err("entry's file name cannot be converted into a \"String\"".into())
+    };
+    
+    match INVOICE_DIR_NAME_RE.is_match(&file_name) {
+        true => Ok(entry.path().to_owned()),
+        false => Err("entry's file name does not match the regex".into())
+    }
+
+}
+
+pub fn build_recursive(args: impl Into<BuildInvoiceArguments>) -> impl ParallelIterator<Item = BuildInvoiceError> {
+    
+    let args = args.into();
+    
+    use rayon::prelude::*;
+
+    WalkDir::new(args.input_dir.clone()).into_iter()
+        .par_bridge()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.file_type().is_dir())
+        .map(|e| entry_path(&e))
+        .flatten()
+        .map(|p| build(BuildInvoiceArguments{input_dir: p})
+            .err()
+        )
+        .flatten()
+}
+
+pub fn build(args: impl Into<BuildInvoiceArguments>) -> Result<(), BuildInvoiceError> {
     let args = args.into();
 
     let input_dir_name = args

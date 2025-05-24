@@ -38,8 +38,8 @@ dependencies:
     path: rust_builder
   flutter_rust_bridge: 2.10.0
   window_manager: ^0.4.3
-  flutter_riverpod: ^2.6.1
   flutter_material_design_icons: ^1.1.7447
+  flutter_bloc: ^9.1.1
 
 dev_dependencies:
   flutter_test:

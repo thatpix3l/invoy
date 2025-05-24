@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_material_design_icons/flutter_material_design_icons.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:invoy/src/rust/api/simple.dart';
 import 'package:invoy/src/rust/frb_generated.dart';
-import 'package:window_manager/window_manager.dart';
+import 'package:invoy/state.dart';
+import 'package:invoy/util.dart';
 
 class ColorPalette {
   static const bright = Color.fromARGB(255, 255, 247, 241);
@@ -16,53 +17,20 @@ class ColorPalette {
   static const accentDark = Color.fromARGB(255, 114, 36, 0);
 }
 
-final isMaximizedProvider = FutureProvider.autoDispose((ref) async {
-  return await windowManager.isMaximized();
-});
-
-String? pickedInvoiceDir;
-
-final pickedInvoiceDirProvider = FutureProvider.autoDispose((ref) async {
-  pickedInvoiceDir = await pickInvoiceDir();
-});
-
 Future<void> main(List<String> args) async {
   await RustLib.init();
 
   // Run app
-  runApp(ProviderScope(child: const MyApp()));
+  runApp(const MyApp());
 }
 
-void minimize() {
-  windowManager.minimize();
-}
+Future<void> Function() maximizeStatusAction(
+  bool isMaximized,
+  WindowMaximizedCubit state,
+) => isMaximized ? unmaximize(state) : maximize(state);
 
-void unmaximize() {
-  windowManager.unmaximize();
-}
-
-void maximize() {
-  windowManager.maximize();
-}
-
-void close() {
-  windowManager.close();
-}
-
-class ToggleWindowData {
-  late void Function() action;
-  late IconData iconData;
-
-  ToggleWindowData(bool isMaximized) {
-    if (isMaximized) {
-      action = unmaximize;
-      iconData = MdiIcons.squareMediumOutline;
-    } else {
-      action = maximize;
-      iconData = Icons.square_outlined;
-    }
-  }
-}
+IconData maximizeStatusIcon(bool isMaximized) =>
+    isMaximized ? MdiIcons.squareMediumOutline : Icons.square_outlined;
 
 class SidebarActionTooltip extends StatelessWidget {
   const SidebarActionTooltip({this.child, required this.message, super.key});
@@ -86,48 +54,55 @@ class SidebarActionTooltip extends StatelessWidget {
   );
 }
 
-Widget pickInvoiceDirWidgetBuilder(
-  BuildContext context,
-  WidgetRef ref,
-  Widget? child,
-) => FloatingActionButton(
-  onPressed: () => ref.refresh(pickedInvoiceDirProvider),
-  hoverColor: ColorPalette.dark.withAlpha(100),
-  splashColor: ColorPalette.accent.withAlpha(150),
-  backgroundColor: ColorPalette.mediumDark.withAlpha(200),
-  foregroundColor: ColorPalette.bright,
-  child: const Icon(Icons.folder),
-);
+class PickInvoiceButton extends StatelessWidget {
+  const PickInvoiceButton({super.key});
 
-const (String, Widget) pickInvoiceDirRecord = (
-  "Pick Invoice Directory",
-  Consumer(builder: pickInvoiceDirWidgetBuilder),
-);
-
-String? buildInvoicePreviousRunError;
-
-void maybeBuildInvoice() async {
-  buildInvoicePreviousRunError = await buildInvoice(inputDir: pickedInvoiceDir);
-}
-
-(String, Widget) buildInvoiceRecord = (
-  "Build Invoice",
-  FloatingActionButton(
-    onPressed: maybeBuildInvoice,
+  @override
+  Widget build(BuildContext context) => FloatingActionButton(
+    onPressed: pickInvoiceAction(context),
     hoverColor: ColorPalette.dark.withAlpha(100),
     splashColor: ColorPalette.accent.withAlpha(150),
     backgroundColor: ColorPalette.mediumDark.withAlpha(200),
     foregroundColor: ColorPalette.bright,
-    child: const Icon(MdiIcons.hammer),
-  ),
+    child: const Icon(Icons.folder),
+  );
+}
+
+(String, Widget) pickInvoiceDirRecord = (
+  "Pick Invoice Directory",
+  PickInvoiceButton(),
 );
+
+class BuildInvoiceButton extends StatelessWidget {
+  const BuildInvoiceButton({super.key});
+
+  @override
+  Widget build(BuildContext context) => BlocBuilder<InvoiceDirCubit, String?>(
+    builder: (context, invoiceDir) => FloatingActionButton(
+      onPressed: buildInvoiceAction(context, invoiceDir),
+      hoverColor: ColorPalette.dark.withAlpha(100),
+      splashColor: ColorPalette.accent.withAlpha(150),
+      backgroundColor: ColorPalette.mediumDark.withAlpha(200),
+      foregroundColor: ColorPalette.bright,
+      child: const Icon(MdiIcons.hammer),
+    ),
+  );
+}
+
+(String, Widget) buildInvoiceRecord = ("Build Invoice", BuildInvoiceButton());
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  Widget build(BuildContext context) => MultiBlocProvider(
+    providers: [
+      BlocProvider(create: (BuildContext context) => BuildInvoiceCubit()),
+      BlocProvider(create: (BuildContext context) => InvoiceDirCubit()),
+      BlocProvider(create: (BuildContext context) => PickInvoiceDirCubit()),
+      BlocProvider(create: (BuildContext context) => WindowMaximizedCubit()),
+    ],
+    child: MaterialApp(
       home: Scaffold(
         backgroundColor: ColorPalette.bright,
         appBar: AppBar(
@@ -135,23 +110,12 @@ class MyApp extends StatelessWidget {
           backgroundColor: ColorPalette.bright,
           actionsPadding: EdgeInsets.all(8),
           actions: [
-            IconButton(onPressed: minimize, icon: Icon(Icons.minimize)),
-            Consumer(
-              builder: (context, ref, child) {
-                final isMaximizedValue = ref.watch(isMaximizedProvider);
-
-                var ToggleWindowData(
-                  :action,
-                  :iconData,
-                ) = switch (isMaximizedValue) {
-                  AsyncData(:final value) => ToggleWindowData(value),
-                  _ => ToggleWindowData(true),
-                };
-
-                ref.invalidate(isMaximizedProvider);
-
-                return IconButton(onPressed: action, icon: Icon(iconData));
-              },
+            const IconButton(onPressed: minimize, icon: Icon(Icons.minimize)),
+            BlocBuilder<WindowMaximizedCubit, bool>(
+              builder: (context, isMaximized) => IconButton(
+                onPressed: maximizeStatusAction(isMaximized, context.read()),
+                icon: Icon(maximizeStatusIcon(isMaximized)),
+              ),
             ),
             // IconButton(onPressed: maximize, icon: Icon(Icons.square_outlined)),
             IconButton(onPressed: close, icon: Icon(Icons.clear)),
@@ -211,6 +175,6 @@ class MyApp extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
 }

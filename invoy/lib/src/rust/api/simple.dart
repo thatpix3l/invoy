@@ -12,5 +12,5 @@ String greet({required String name}) =>
 Future<String?> pickInvoiceDir() =>
     RustLib.instance.api.crateApiSimplePickInvoiceDir();
 
-Future<String?> buildInvoice({String? inputDir}) =>
+Future<String?> buildInvoice({required String inputDir}) =>
     RustLib.instance.api.crateApiSimpleBuildInvoice(inputDir: inputDir);
