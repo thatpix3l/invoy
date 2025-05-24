@@ -68,7 +68,7 @@ class PickInvoiceButton extends StatelessWidget {
   );
 }
 
-(String, Widget) pickInvoiceDirRecord = (
+const (String, Widget) pickInvoiceDirRecord = (
   "Pick Invoice Directory",
   PickInvoiceButton(),
 );
@@ -89,7 +89,10 @@ class BuildInvoiceButton extends StatelessWidget {
   );
 }
 
-(String, Widget) buildInvoiceRecord = ("Build Invoice", BuildInvoiceButton());
+const (String, Widget) buildInvoiceRecord = (
+  "Build Invoice",
+  BuildInvoiceButton(),
+);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
