@@ -9,8 +9,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 String greet({required String name}) =>
     RustLib.instance.api.crateApiSimpleGreet(name: name);
 
-Future<String?> pickInvoiceDir() =>
-    RustLib.instance.api.crateApiSimplePickInvoiceDir();
+Future<String?> pickDir() => RustLib.instance.api.crateApiSimplePickDir();
 
 Future<String?> buildInvoice({required String inputDir}) =>
     RustLib.instance.api.crateApiSimpleBuildInvoice(inputDir: inputDir);

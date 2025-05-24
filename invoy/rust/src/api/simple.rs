@@ -11,7 +11,7 @@ pub fn greet(name: String) -> String {
     format!("Hello, {name}!")
 }
 
-pub fn pick_invoice_dir() -> Option<String> {
+pub fn pick_dir() -> Option<String> {
     rfd::FileDialog::new()
         .pick_folder()
         .map(|p| p.to_str().map(|s| s.to_owned()))

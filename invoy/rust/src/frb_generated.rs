@@ -37,7 +37,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.10.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1470440540;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1330556231;
 
 // Section: executor
 
@@ -143,7 +143,7 @@ fn wire__crate__api__simple__init_app_impl(
         },
     )
 }
-fn wire__crate__api__simple__pick_invoice_dir_impl(
+fn wire__crate__api__simple__pick_dir_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -151,7 +151,7 @@ fn wire__crate__api__simple__pick_invoice_dir_impl(
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "pick_invoice_dir",
+            debug_name: "pick_dir",
             port: Some(port_),
             mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
         },
@@ -168,7 +168,7 @@ fn wire__crate__api__simple__pick_invoice_dir_impl(
             deserializer.end();
             move |context| {
                 transform_result_sse::<_, ()>((move || {
-                    let output_ok = Result::<_, ()>::Ok(crate::api::simple::pick_invoice_dir())?;
+                    let output_ok = Result::<_, ()>::Ok(crate::api::simple::pick_dir())?;
                     Ok(output_ok)
                 })())
             }
@@ -246,7 +246,7 @@ fn pde_ffi_dispatcher_primary_impl(
     match func_id {
         1 => wire__crate__api__simple__build_invoice_impl(port, ptr, rust_vec_len, data_len),
         3 => wire__crate__api__simple__init_app_impl(port, ptr, rust_vec_len, data_len),
-        4 => wire__crate__api__simple__pick_invoice_dir_impl(port, ptr, rust_vec_len, data_len),
+        4 => wire__crate__api__simple__pick_dir_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }

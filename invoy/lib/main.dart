@@ -59,40 +59,60 @@ class PickInvoiceButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => FloatingActionButton(
-    onPressed: pickInvoiceAction(context),
+    onPressed: pickInvoiceAction(state: context.read()),
     hoverColor: ColorPalette.dark.withAlpha(100),
     splashColor: ColorPalette.accent.withAlpha(150),
     backgroundColor: ColorPalette.mediumDark.withAlpha(200),
     foregroundColor: ColorPalette.bright,
-    child: const Icon(Icons.folder),
+    child: BlocBuilder<InvoicePromptDirCubit, PickDirState>(
+      builder: (context, state) => switch (state) {
+        PickDirBusy() => CircularProgressIndicator(color: ColorPalette.bright),
+        PickDirPicked() => () {
+          context.read<InvoiceDirCubit>().set(state.pickedDir);
+          return Icon(Icons.folder);
+        }(),
+        _ => Icon(Icons.folder),
+      },
+    ),
   );
 }
 
-const (String, Widget) pickInvoiceDirRecord = (
-  "Pick Invoice Directory",
-  PickInvoiceButton(),
-);
+class PickInvoiceSidebarButton extends StatelessWidget {
+  const PickInvoiceSidebarButton({super.key});
+
+  @override
+  Widget build(BuildContext context) => const SidebarActionTooltip(
+    message: "Pick Invoice Directory",
+    child: PickInvoiceButton(),
+  );
+}
 
 class BuildInvoiceButton extends StatelessWidget {
   const BuildInvoiceButton({super.key});
 
   @override
-  Widget build(BuildContext context) => BlocBuilder<InvoiceDirCubit, String?>(
-    builder: (context, invoiceDir) => FloatingActionButton(
-      onPressed: buildInvoiceAction(context, invoiceDir),
-      hoverColor: ColorPalette.dark.withAlpha(100),
-      splashColor: ColorPalette.accent.withAlpha(150),
-      backgroundColor: ColorPalette.mediumDark.withAlpha(200),
-      foregroundColor: ColorPalette.bright,
-      child: const Icon(MdiIcons.hammer),
+  Widget build(BuildContext context) => FloatingActionButton(
+    onPressed: buildInvoiceAction(
+      buildInvoiceCubit: context.read(),
+      invoiceDirCubit: context.read(),
     ),
+    hoverColor: ColorPalette.dark.withAlpha(100),
+    splashColor: ColorPalette.accent.withAlpha(150),
+    backgroundColor: ColorPalette.mediumDark.withAlpha(200),
+    foregroundColor: ColorPalette.bright,
+    child: const Icon(MdiIcons.hammer),
   );
 }
 
-const (String, Widget) buildInvoiceRecord = (
-  "Build Invoice",
-  BuildInvoiceButton(),
-);
+class BuildInvoiceSidebarButton extends StatelessWidget {
+  const BuildInvoiceSidebarButton({super.key});
+
+  @override
+  Widget build(BuildContext context) => const SidebarActionTooltip(
+    message: "BuildInvoice",
+    child: BuildInvoiceButton(),
+  );
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -102,7 +122,7 @@ class MyApp extends StatelessWidget {
     providers: [
       BlocProvider(create: (BuildContext context) => BuildInvoiceCubit()),
       BlocProvider(create: (BuildContext context) => InvoiceDirCubit()),
-      BlocProvider(create: (BuildContext context) => PickInvoiceDirCubit()),
+      BlocProvider(create: (BuildContext context) => InvoicePromptDirCubit()),
       BlocProvider(create: (BuildContext context) => WindowMaximizedCubit()),
     ],
     child: MaterialApp(
@@ -124,56 +144,47 @@ class MyApp extends StatelessWidget {
           ],
         ),
         body: Row(
+          spacing: 16,
           children: [
-            Container(
-              // color: ColorPalette.bright,
-              child: Padding(
-                padding: EdgeInsetsGeometry.all(16),
-                child:
-                    // Sidebar actions for manipulating an invoice.
-                    Column(
-                      spacing: 16,
-                      children: [pickInvoiceDirRecord, buildInvoiceRecord]
-                          .map(
-                            (record) => SidebarActionTooltip(
-                              message: record.$1,
-                              child: record.$2,
-                            ),
-                          )
-                          .toList(),
-                    ),
-              ),
-            ),
-            Center(
-              child: Container(
-                // color: Color.fromARGB(255, 222, 233, 255),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 16.0,
-                  ),
-                  child: Column(
+            const Padding(
+              padding: EdgeInsetsGeometry.all(16),
+              child:
+                  // Sidebar actions for manipulating an invoice.
+                  Column(
+                    spacing: 16,
                     children: [
-                      Expanded(child: Spacer()),
-                      Text(
-                        'Action: Call Rust `greet("Tom")`\nResult: `${greet(name: "Tom")}`',
-                      ),
-                      // TextFormField(
-                      //   initialValue: 'Input text',
-                      //   decoration: InputDecoration(
-                      //     labelText: 'Label text',
-                      //     errorText: 'Error message',
-                      //     border: OutlineInputBorder(),
-                      //     suffixIcon: Icon(Icons.error),
-                      //   ),
-                      // ),
-                      Expanded(child: Spacer()),
+                      PickInvoiceSidebarButton(),
+                      BuildInvoiceSidebarButton(),
                     ],
                   ),
+            ),
+            Expanded(
+              child: Align(
+                alignment: Alignment.bottomRight,
+                child: Column(
+                  children: [
+                    // Expanded(child: Spacer()),
+                    Expanded(
+                      child: Text(
+                        'Action: Call Rust `greet("Tom")`\nResult: `${greet(name: "Tom")}`',
+                      ),
+                    ),
+                    // TextFormField(
+                    //   initialValue: 'Input text',
+                    //   decoration: InputDecoration(
+                    //     labelText: 'Label text',
+                    //     errorText: 'Error message',
+                    //     border: OutlineInputBorder(),
+                    //     suffixIcon: Icon(Icons.error),
+                    //   ),
+                    // ),
+                    // Expanded(child: Spacer()),
+                  ],
                 ),
               ),
             ),
-            Expanded(child: Spacer()),
+
+            // Expanded(child: Spacer()),
           ],
         ),
       ),

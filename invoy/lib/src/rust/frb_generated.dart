@@ -64,7 +64,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.10.0';
 
   @override
-  int get rustContentHash => -1470440540;
+  int get rustContentHash => -1330556231;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -81,7 +81,7 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> crateApiSimpleInitApp();
 
-  Future<String?> crateApiSimplePickInvoiceDir();
+  Future<String?> crateApiSimplePickDir();
 }
 
 class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
@@ -171,7 +171,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "init_app", argNames: []);
 
   @override
-  Future<String?> crateApiSimplePickInvoiceDir() {
+  Future<String?> crateApiSimplePickDir() {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -187,15 +187,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_opt_String,
           decodeErrorData: null,
         ),
-        constMeta: kCrateApiSimplePickInvoiceDirConstMeta,
+        constMeta: kCrateApiSimplePickDirConstMeta,
         argValues: [],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiSimplePickInvoiceDirConstMeta =>
-      const TaskConstMeta(debugName: "pick_invoice_dir", argNames: []);
+  TaskConstMeta get kCrateApiSimplePickDirConstMeta =>
+      const TaskConstMeta(debugName: "pick_dir", argNames: []);
 
   @protected
   String dco_decode_String(dynamic raw) {
