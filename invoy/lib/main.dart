@@ -117,7 +117,6 @@ class MyApp extends StatelessWidget {
                 icon: Icon(maximizeStatusIcon(isMaximized)),
               ),
             ),
-            // IconButton(onPressed: maximize, icon: Icon(Icons.square_outlined)),
             IconButton(onPressed: close, icon: Icon(Icons.clear)),
           ],
         ),
