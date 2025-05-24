@@ -30,7 +30,7 @@ Future<void> Function() maximizeStatusAction(
 ) => isMaximized ? unmaximize(state) : maximize(state);
 
 IconData maximizeStatusIcon(bool isMaximized) =>
-    isMaximized ? MdiIcons.squareMediumOutline : Icons.square_outlined;
+    isMaximized ? MdiIcons.dockWindow : Icons.crop_square_outlined;
 
 class SidebarActionTooltip extends StatelessWidget {
   const SidebarActionTooltip({this.child, required this.message, super.key});
