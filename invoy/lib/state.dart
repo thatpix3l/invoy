@@ -43,22 +43,6 @@ class MaximizationListener extends WindowListener {
   void onWindowUnmaximize() => maximizedState.set(false);
 }
 
-// final isMaximizedProvider = FutureProvider.autoDispose((ref) async {
-//   return await windowManager.isMaximized();
-// });
-
-// final errorMessageProvider = StateProvider.family.autoDispose<String?, String?>(
-//   (ref, param) => null,
-// );
-
-// final invoiceDirProvider = Provider.family.autoDispose<String, String>(
-//   (ref, param) => param,
-// );
-
-// final pickingInvoiceDirProvider = Provider.autoDispose((ref) {
-//   return false;
-// });
-
 class PickInvoiceDirCubit extends Cubit<Null> {
   PickInvoiceDirCubit() : super(null);
 
