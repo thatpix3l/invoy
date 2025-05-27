@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_material_design_icons/flutter_material_design_icons.dart';
-import 'package:invoy/src/rust/api/simple.dart';
 import 'package:invoy/src/rust/frb_generated.dart';
 import 'package:invoy/state.dart';
 import 'package:invoy/util.dart';
