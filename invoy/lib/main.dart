@@ -164,11 +164,11 @@ class MyApp extends StatelessWidget {
                 child: Column(
                   children: [
                     // Expanded(child: Spacer()),
-                    Expanded(
-                      child: Text(
-                        'Action: Call Rust `greet("Tom")`\nResult: `${greet(name: "Tom")}`',
-                      ),
-                    ),
+                    // Expanded(
+                    //   child: Text(
+                    //     'Action: Call Rust `greet("Tom")`\nResult: `${greet(name: "Tom")}`',
+                    //   ),
+                    // ),
                     // TextFormField(
                     //   initialValue: 'Input text',
                     //   decoration: InputDecoration(
